@@ -2,19 +2,39 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
-	"pmoroney/poplop/db"
+
+	"github.com/pmoroney/poplop/db"
 
 	"github.com/camlistore/camlistore/pkg/misc/pinentry"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
 	var err error
 
-	db.Connect()
+	if len(os.Args) != 2 {
+		log.Fatal("Usage: poplop nickname\n")
+	}
+
+	cfg := struct {
+		DB mysql.Config
+	}{}
+
+	cfgBytes, err := ioutil.ReadFile("/etc/poplop.conf")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = yaml.Unmarshal(cfgBytes, &cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db.Connect(cfg.DB)
 
 	n, err := db.GetScheme(os.Args[1])
 	if err != nil {

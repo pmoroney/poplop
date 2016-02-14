@@ -3,7 +3,10 @@ package db
 import (
 	"database/sql"
 	"log"
-	"pmoroney/poplop"
+
+	"github.com/pmoroney/poplop"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 /*
@@ -44,9 +47,9 @@ func UpdateScheme(s poplop.Scheme, oldName string) error {
 
 var db *sql.DB
 
-func Connect() {
+func Connect(c mysql.Config) {
 	var err error
-	db, err = sql.Open("mysql", "username:password@unix(/var/run/mysqld/mysqld.sock)/poplop")
+	db, err = sql.Open("mysql", c.FormatDSN())
 	if err != nil {
 		log.Fatal(err)
 	}
