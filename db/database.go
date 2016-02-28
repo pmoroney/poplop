@@ -27,7 +27,7 @@ CREATE TABLE `Scheme` (
 */
 
 func GetScheme(name string) (poplop.Scheme, error) {
-	var s poplop.Scheme
+	s := poplop.Scheme{}
 	err := db.QueryRow("SELECT Name, Counter, Username, URL, Notes, Forbidden, MaxLength, Legacy from Scheme where Name = ?", name).Scan(&s.Name, &s.Counter, &s.Username, &s.URL, &s.Notes, &s.Forbidden, &s.MaxLength, &s.Legacy)
 	return s, err
 }
@@ -38,9 +38,6 @@ func InsertScheme(s poplop.Scheme) error {
 }
 
 func UpdateScheme(s poplop.Scheme, oldName string) error {
-	if oldName == "" {
-		oldName = s.Name
-	}
 	_, err := db.Exec("UPDATE Scheme SET Name = ?, Counter = ?, Username = ?, URL = ?, Notes = ?, Forbidden = ?, MaxLength = ?, Legacy = ? WHERE Name = ?", s.Name, s.Counter, s.Username, s.URL, s.Notes, s.Forbidden, s.MaxLength, s.Legacy, oldName)
 	return err
 }

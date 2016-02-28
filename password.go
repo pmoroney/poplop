@@ -14,14 +14,14 @@ import (
 )
 
 type Scheme struct {
-	Name      string
-	Counter   int
-	Username  string
-	URL       string
-	Notes     string
-	Forbidden string
-	MaxLength int
-	Legacy    bool
+	Name      string `json:"name"`
+	Counter   int    `json:"counter,omitempty"`
+	Username  string `json:"username,omitempty"`
+	URL       string `json:"url,omitempty"`
+	Notes     string `json:"notes,omitempty"`
+	Forbidden string `json:"forbidden,omitempty"`
+	MaxLength int    `json:"max_length,omitempty"`
+	Legacy    bool   `json:"legacy,omitempty"`
 	// "!\"#$%&'()*+,-./:;<=>?@[\\]^_'",
 }
 
