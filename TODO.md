@@ -1,7 +1,7 @@
 #Todo
-- Database config
 - Scheme edit command
-- HTTP server
+- HTTP Client Side tools
+- Command line api client
 
 #HTTP
 - initial page
