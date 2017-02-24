@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/pmoroney/poplop/db"
 
 	"github.com/go-sql-driver/mysql"
+	"golang.org/x/crypto/acme/autocert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -29,6 +31,7 @@ func main() {
 		DB   mysql.Config
 		HTTP struct {
 			Addr              string
+			Host              string
 			ReadTimeout       time.Duration
 			WriteTimeout      time.Duration
 			KeyFile           string
@@ -51,13 +54,27 @@ func main() {
 	db.Connect(cfg.DB)
 
 	config := &tls.Config{}
-	config.Certificates = make([]tls.Certificate, 1)
-	config.Certificates[0], err = tls.LoadX509KeyPair(cfg.HTTP.CertFile, cfg.HTTP.KeyFile)
-	if err != nil {
-		log.Fatal(err)
+
+	if cfg.HTTP.Host == "" && (cfg.HTTP.KeyFile == "" || cfg.HTTP.CertFile == "") {
+		log.Fatal("Need host or keyfile and certfile configs")
 	}
 
-	config.BuildNameToCertificate()
+	if cfg.HTTP.Host == "" {
+		config.Certificates = make([]tls.Certificate, 1)
+		config.Certificates[0], err = tls.LoadX509KeyPair(cfg.HTTP.CertFile, cfg.HTTP.KeyFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		config.BuildNameToCertificate()
+	} else {
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(cfg.HTTP.Host),
+			Cache:      autocert.DirCache("."),
+		}
+
+		config.GetCertificate = m.GetCertificate
+	}
 
 	if cfg.HTTP.RequireClientCert {
 		config.ClientAuth = tls.RequireAndVerifyClientCert
@@ -70,6 +87,18 @@ func main() {
 		pool := x509.NewCertPool()
 		pool.AppendCertsFromPEM(clientCAFile)
 		config.ClientCAs = pool
+	}
+
+	if cfg.HTTP.RequireClientCert {
+		copy := *config
+		copy.ClientAuth = tls.VerifyClientCertIfGiven
+		config.GetConfigForClient = func(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+			if !strings.HasSuffix(hello.ServerName, ".acme.invalid") {
+				return nil, nil
+			}
+
+			return &copy, nil
+		}
 	}
 
 	server := &http.Server{

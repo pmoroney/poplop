@@ -85,7 +85,7 @@ func scheme_post(w http.ResponseWriter, req *http.Request) {
 func scheme_put(w http.ResponseWriter, req *http.Request) {
 	dir, name := path.Split(req.URL.Path)
 	if dir != "/scheme/" {
-		http.Error(w, "Unknown directory structure", http.StatusBadRequest)
+		http.Error(w, "unknown directory structure", http.StatusBadRequest)
 		return
 	}
 	if name == "" {

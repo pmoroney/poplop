@@ -19,8 +19,8 @@ func index_handle(w http.ResponseWriter, req *http.Request) {
 	</head>
 	<body>
 	<form action="/poplop" method="post">
-	<input name="nickname"/>
-	<input type="password" name="master"/>
+	<input name="nickname"/><br/>
+	<input type="password" name="master"/><br/>
 	<button type="submit">Get Password</button>
 	</form>
 	</body>
